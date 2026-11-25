@@ -32,7 +32,7 @@ If the upload flow does not work locally, check that the local D1 table exists a
 | `public/app.js` | API client, upload state machine, history/search, auth, toasts |
 | `src/worker.js` | Worker API: multipart upload and release listing |
 | `schema.sql` | D1 schema |
-| `scripts/` | Token generation and deployment helpers |
+| `scripts/` | Bash helpers for token generation and deployment |
 | `wrangler.toml` | Worker, assets, R2 and D1 bindings |
 
 ## Conventions
@@ -43,7 +43,7 @@ If the upload flow does not work locally, check that the local D1 table exists a
 - **Respect reduced motion.** Any new animation should have a sensible `prefers-reduced-motion` behaviour.
 - **Accessibility matters.** Keep labels, focus states, keyboard shortcuts, and ARIA live regions working. The drop zone, search field, progress bar, and token field are all keyboard accessible.
 - **No secrets in the repository.** Use `npm run token:local` and `.dev.vars`; both are ignored by Git.
-- **Keep scripts cross-platform.** The maintenance scripts are Node.js (`.mjs`) on purpose; avoid bash-only requirements for the public scripts.
+- **Helper scripts are Bash** (`scripts/*.sh`). Keep them dependency-free beyond Bash, `openssl`/Node, and `npx`. They run in CI on Ubuntu; test on macOS too if you can.
 
 ## Before opening a pull request
 

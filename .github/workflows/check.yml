@@ -27,5 +27,8 @@ jobs:
       - name: Syntax check
         run: npm run check
 
+      - name: Shell script syntax
+        run: bash -n scripts/*.sh
+
       - name: Bundle with Wrangler (dry run)
         run: npm run deploy:dry

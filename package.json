@@ -28,10 +28,10 @@
   },
   "scripts": {
     "dev": "wrangler dev",
-    "deploy": "node scripts/deploy.mjs",
-    "deploy:dry": "node scripts/deploy.mjs --dry-run",
-    "token": "node scripts/generate-admin-token.mjs",
-    "token:local": "node scripts/generate-admin-token.mjs --local",
+    "deploy": "bash scripts/deploy.sh",
+    "deploy:dry": "bash scripts/deploy.sh --dry-run",
+    "token": "bash scripts/generate-admin-token.sh",
+    "token:local": "bash scripts/generate-admin-token.sh --local",
     "db:init": "wrangler d1 execute updatini --file=./schema.sql --remote",
     "db:init:local": "wrangler d1 execute updatini --file=./schema.sql --local",
     "check": "node --check src/worker.js && node --check public/app.js"

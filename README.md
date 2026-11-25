@@ -75,6 +75,7 @@ Every release is stored as an R2 object at `bundles/<timestamp>-<filename>` and 
 | Index | Cloudflare D1 (`schema.sql`) |
 | Frontend | Semantic HTML, modern CSS, vanilla JS (`public/`) |
 | Tooling | Wrangler 4, Node.js 22.12+ |
+| Scripts | Bash (`scripts/*.sh`) |
 | Fonts | Space Grotesk + JetBrains Mono (Google Fonts, with system fallbacks) |
 
 ## Project structure
@@ -89,9 +90,9 @@ Every release is stored as an R2 object at `bundles/<timestamp>-<filename>` and 
 ├── src/
 │   └── worker.js                   # API: upload/start → part → finish, list releases
 ├── scripts/
-│   ├── generate-admin-token.mjs    # Generate + install ADMIN_TOKEN
-│   ├── deploy.mjs                  # Guard-railed wrangler deploy
-│   └── wrangler.mjs                # Locally installed or npx Wrangler
+│   ├── generate-admin-token.sh     # Generate + install ADMIN_TOKEN
+│   ├── deploy.sh                   # Guard-railed wrangler deploy
+│   └── lib.sh                      # Shared Wrangler helper
 ├── preview/                        # Screenshots used by this README
 ├── schema.sql                      # D1 table definition
 ├── wrangler.toml                   # Worker, assets, R2 and D1 bindings
@@ -105,6 +106,7 @@ Every release is stored as an R2 object at `bundles/<timestamp>-<filename>` and 
 ### 1. Prerequisites
 
 - **Node.js 22.12+** (Wrangler 4 requirement) and npm
+- **Bash** for the helper scripts (Linux, macOS, or WSL/Git Bash on Windows)
 - A Cloudflare account with Workers, R2 and D1 available
 - A signed RAUC bundle to test with
 
@@ -165,14 +167,14 @@ That is the whole setup. Later deployments are just `npm run deploy`.
 
 ## Scripts
 
-The two maintenance scripts wrap Wrangler so the common tasks are one command and hard to get wrong.
+The two helper scripts wrap Wrangler so the common tasks are one command and hard to get wrong.
 
 | Command | Script | What it does |
 | --- | --- | --- |
-| `npm run token` | `scripts/generate-admin-token.mjs` | Generates a fresh token, checks Wrangler login, writes it as the `ADMIN_TOKEN` secret via `wrangler secret bulk`, and prints it once. |
-| `npm run token:local` | `scripts/generate-admin-token.mjs --local` | Generates a fresh token and writes it to `.dev.vars` with `0600` permissions. Does not contact Cloudflare. |
-| `npm run deploy` | `scripts/deploy.mjs` | Verifies `wrangler.toml`, checks your Cloudflare login, warns if `ADMIN_TOKEN` is missing, then runs `wrangler deploy`. Extra flags are forwarded. |
-| `npm run deploy:dry` | `scripts/deploy.mjs --dry-run` | Bundles the Worker locally without deploying or requiring login. Used by CI. |
+| `npm run token` | `scripts/generate-admin-token.sh` | Generates a fresh token, checks Wrangler login, writes it as the `ADMIN_TOKEN` secret via `wrangler secret bulk`, and prints it once. |
+| `npm run token:local` | `scripts/generate-admin-token.sh --local` | Generates a fresh token and writes it to `.dev.vars` with `0600` permissions. Does not contact Cloudflare. |
+| `npm run deploy` | `scripts/deploy.sh` | Verifies `wrangler.toml`, checks your Cloudflare login, warns if `ADMIN_TOKEN` is missing, then runs `wrangler deploy`. Extra flags are forwarded. |
+| `npm run deploy:dry` | `scripts/deploy.sh --dry-run` | Bundles the Worker locally without deploying or requiring login. Used by CI. |
 | `npm run dev` | Wrangler | Starts the local Worker + assets server at `http://localhost:8787`. |
 | `npm run db:init` | Wrangler | Applies `schema.sql` to the remote D1 database. |
 | `npm run db:init:local` | Wrangler | Applies `schema.sql` to the local D1 emulation. |
