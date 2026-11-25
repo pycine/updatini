@@ -1,0 +1,28 @@
+# Updatini — Cloudflare Worker configuration.
+#
+# The R2 bucket and D1 database below belong to the reference deployment.
+# If you fork this project, create your own resources and update the values:
+#
+#   npx wrangler r2 bucket create updatini-bundles
+#   npx wrangler d1 create updatini
+#
+# Then apply schema.sql to the new database (see README).
+#
+name = "updatini"
+main = "src/worker.js"
+compatibility_date = "2026-11-01"
+
+[assets]
+directory = "./public"
+run_worker_first = ["/api/*"]
+
+[[r2_buckets]]
+binding = "BUCKET"
+bucket_name = "zaater-updates"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "updatini"
+database_id = "6dd6174f-5be4-479b-bcaf-815ad9d2adc6"
+
+

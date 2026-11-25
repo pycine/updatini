@@ -1,0 +1,4 @@
+# Local-only secrets for `wrangler dev`.
+# Copy this file to `.dev.vars` (or run `npm run token:local`) and never commit it.
+
+ADMIN_TOKEN="replace-with-a-long-random-token"
