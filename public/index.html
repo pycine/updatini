@@ -3,19 +3,38 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Updatini · OTA update console</title>
-<meta name="description" content="Publish RAUC bundles to embedded boards. Chunked uploads to R2, release index in D1, targeted by board or fleet.">
-<meta name="theme-color" content="#050a0e">
-<meta name="color-scheme" content="dark">
+<title>Updatini — over-the-air updates for embedded fleets</title>
+<meta name="description" content="Updatini is the open-source OTA publishing console for embedded Linux fleets. Ship signed RAUC bundles to Cloudflare R2, index releases in D1, and target one board or all of them.">
+<meta name="theme-color" id="themeColor" content="#050a0e">
+<meta property="og:title" content="Updatini — over-the-air updates for embedded fleets">
+<meta property="og:description" content="Open-source OTA publishing console for signed RAUC bundles on Cloudflare Workers, R2 and D1.">
+<meta property="og:type" content="website">
+<meta name="color-scheme" content="dark light">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="styles.css">
-<script>document.documentElement.classList.replace("no-js", "js");</script>
+<script>
+document.documentElement.classList.replace("no-js", "js");
+(function () {
+  try {
+    var saved = localStorage.getItem("updatini-theme");
+    var theme = saved === "light" || saved === "dark"
+      ? saved
+      : (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+    document.documentElement.dataset.theme = theme;
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", theme === "light" ? "#eef2f4" : "#050a0e");
+  } catch (error) {
+    document.documentElement.dataset.theme = "dark";
+  }
+})();
+</script>
+<link rel="stylesheet" href="landing.css">
+<link rel="stylesheet" href="theme.css">
 </head>
 <body>
-<a class="skip" href="#new-release">Skip to publish form</a>
+<a class="skip" href="#main">Skip to content</a>
 
 <div class="bg" aria-hidden="true">
   <div class="bg-grid"></div>
@@ -26,39 +45,40 @@
 </div>
 
 <svg class="sprite" aria-hidden="true" focusable="false" xmlns="http://www.w3.org/2000/svg">
-  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.3"/></symbol>
-  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2.5 12S6 5.5 12 5.5 21.5 12 21.5 12 18 18.5 12 18.5 2.5 12 2.5 12Z"/><circle cx="12" cy="12" r="3.1"/></symbol>
-  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="m4 4 16 16"/><path d="M9.9 5.9A9.6 9.6 0 0 1 12 5.5c6 0 9.5 6.5 9.5 6.5a17 17 0 0 1-3.2 4M6.2 8.2A17.6 17.6 0 0 0 2.5 12S6 18.5 12 18.5a9.7 9.7 0 0 0 4-.85"/><path d="M10.1 10.1a3.2 3.2 0 0 0 4.5 4.5"/></symbol>
-  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4"/><path d="M7.5 8.5 12 4l4.5 4.5"/><path d="M4 15.5v2A2.5 2.5 0 0 0 6.5 20h11a2.5 2.5 0 0 0 2.5-2.5v-2"/></symbol>
-  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></symbol>
-  <symbol id="i-package" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.3 7.7 7.7 4.3 7.7-4.3M12 12v9"/></symbol>
-  <symbol id="i-x" viewBox="0 0 24 24"><path d="m6 6 12 12M18 6 6 18"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24"><path d="m4.5 12.5 5 5 10-11"/></symbol>
-  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
-  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M15 5.5V5a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v7a2 2 0 0 0 2 2h.5"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="m13 6 6 6-6 6"/></symbol>
-  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 6.3"/><path d="M20 4.5V11h-6.5"/></symbol>
-  <symbol id="i-layer" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12c0 4.42 2.87 8.17 6.84 9.5.5.09.68-.22.68-.48 0-.24-.01-.87-.01-1.7-2.78.6-3.37-1.34-3.37-1.34-.45-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.61.07-.61 1 .07 1.53 1.03 1.53 1.03.89 1.53 2.34 1.09 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.94 0-1.09.39-1.98 1.03-2.68-.1-.25-.45-1.27.1-2.64 0 0 .84-.27 2.75 1.02A9.56 9.56 0 0 1 12 6.8c.85 0 1.71.11 2.51.34 1.91-1.29 2.75-1.02 2.75-1.02.55 1.37.2 2.39.1 2.64.64.7 1.03 1.59 1.03 2.68 0 3.84-2.34 4.68-4.57 4.93.36.31.68.92.68 1.85 0 1.34-.01 2.42-.01 2.75 0 .27.18.58.69.48A10.01 10.01 0 0 0 22 12c0-5.52-4.48-10-10-10Z" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4"/><path d="M7.5 8.5 12 4l4.5 4.5"/><path d="M4 15.5v2A2.5 2.5 0 0 0 6.5 20h11a2.5 2.5 0 0 0 2.5-2.5v-2"/></symbol>
+  <symbol id="i-layers" viewBox="0 0 24 24"><path d="m12 3 9 5-9 5-9-5 9-5Z"/><path d="m3 12 9 5 9-5"/></symbol>
   <symbol id="i-board" viewBox="0 0 24 24"><rect x="6" y="6" width="12" height="12" rx="2"/><rect x="9.7" y="9.7" width="4.6" height="4.6" rx="1"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></symbol>
-  <symbol id="i-alert" viewBox="0 0 24 24"><path d="M12 3.5 21 20H3L12 3.5Z"/><path d="M12 9.5v4.5"/><circle cx="12" cy="17" r=".9" fill="currentColor" stroke="none"/></symbol>
-  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5"/><circle cx="12" cy="8" r=".9" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.5 14.3A8.5 8.5 0 0 1 9.7 3.5 8.5 8.5 0 1 0 20.5 14.3Z"/></symbol>
+  <symbol id="i-package" viewBox="0 0 24 24"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="m4.3 7.7 7.7 4.3 7.7-4.3M12 12v9"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></symbol>
   <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3 5 6v5.5c0 4.4 3 7.9 7 9.5 4-1.6 7-5.1 7-9.5V6l-7-3Z"/><path d="m9 12 2 2 4-4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m4.5 12.5 5 5 10-11"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><circle cx="12" cy="15.5" r="1.3"/></symbol>
+  <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5.5" rx="7.5" ry="3"/><path d="M4.5 5.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/><path d="M4.5 11.5v6c0 1.7 3.4 3 7.5 3s7.5-1.3 7.5-3v-6"/></symbol>
+  <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4.5 4.5 0 0 1-.4-9A6 6 0 0 1 18.3 10 4 4 0 0 1 17.5 18H7Z"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="m8.5 8-4 4 4 4M15.5 8l4 4-4 4"/></symbol>
+  <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 6.3"/><path d="M20 4.5V11h-6.5"/></symbol>
+  <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4 11 13"/><path d="M18 14v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4"/></symbol>
   <symbol id="i-bolt" viewBox="0 0 24 24"><path d="M13 3 5 13.5h6L11 21l8-10.5h-6L13 3Z"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8Z"/><path d="M14 3v5h5"/></symbol>
 </svg>
 
-<header class="topbar">
-  <div class="topbar-in">
-    <a class="brand" href="#top" aria-label="Updatini home">
+<header class="nav" id="nav">
+  <div class="nav-in">
+    <a class="brand" href="/" aria-label="Updatini home">
       <span class="mark" aria-hidden="true">
         <svg viewBox="0 0 38 38" width="38" height="38">
           <defs>
-            <linearGradient id="markGrad" x1="0" y1="0" x2="1" y2="1">
+            <linearGradient id="landingMark" x1="0" y1="0" x2="1" y2="1">
               <stop offset="0" stop-color="#7cf5c6"/><stop offset="1" stop-color="#38bdf8"/>
             </linearGradient>
           </defs>
-          <rect x="1" y="1" width="36" height="36" rx="11" fill="#071017" stroke="url(#markGrad)" stroke-opacity=".5"/>
-          <path d="M19 26.5V12" stroke="url(#markGrad)" stroke-width="2.3" stroke-linecap="round"/>
-          <path d="m13 18 6-6 6 6" fill="none" stroke="url(#markGrad)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+          <rect x="1" y="1" width="36" height="36" rx="11" fill="#071017" stroke="url(#landingMark)" stroke-opacity=".5"/>
+          <path d="M19 26.5V12" stroke="url(#landingMark)" stroke-width="2.3" stroke-linecap="round"/>
+          <path d="m13 18 6-6 6 6" fill="none" stroke="url(#landingMark)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
           <path d="M10.5 21v3.5M27.5 21v3.5" stroke="#45e0a0" stroke-opacity=".5" stroke-width="1.5" stroke-linecap="round"/>
         </svg>
         <span class="mark-ping"></span>
@@ -69,267 +89,476 @@
       </span>
     </a>
 
-    <form class="conn" id="conn" autocomplete="off" novalidate>
-      <label class="sr-only" for="tok">Admin token</label>
-      <div class="conn-field">
-        <svg class="ic" aria-hidden="true"><use href="#i-lock"/></svg>
-        <input id="tok" type="password" placeholder="Admin token" spellcheck="false" autocomplete="off">
-        <button type="button" class="icon-btn peek" id="reveal" aria-label="Show admin token" aria-pressed="false">
-          <svg class="ic" aria-hidden="true"><use href="#i-eye"/></svg>
-        </button>
-      </div>
-      <button class="btn btn-connect" id="connBtn" type="submit">
-        <span class="conn-dot" aria-hidden="true"></span>
-        <span id="connLabel">Connect</span>
-      </button>
-    </form>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#features">Features</a>
+      <a href="#how">Workflow</a>
+      <a href="#security">Security</a>
+      <a class="gh-link" href="https://github.com/pycine/updatini" target="_blank" rel="noopener noreferrer">
+        <svg class="ic" aria-hidden="true"><use href="#i-github"/></svg>GitHub
+      </a>
+    </nav>
+
+    <button class="theme-toggle" type="button" data-theme-toggle aria-label="Switch to light mode" title="Switch theme">
+      <svg class="ic theme-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+      <svg class="ic theme-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+    </button>
+
+    <a class="btn btn-primary btn-nav" href="/console/">
+      Open console
+      <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>
+    </a>
   </div>
+  <span class="scroll-progress" aria-hidden="true"></span>
 </header>
 
-<main class="shell" id="top">
-  <section class="hero" aria-labelledby="heroTitle">
-    <p class="eyebrow reveal" style="--d:0">
-      <span class="pulse-dot" aria-hidden="true"></span>
-      Update control plane
-    </p>
-    <h1 class="reveal" id="heroTitle" style="--d:1">
-      Over-the-air updates,<br>
-      <span class="grad">without the guesswork.</span>
-    </h1>
-    <p class="lede reveal" style="--d:2">
-      Upload a signed RAUC bundle once. Updatini chunks it into R2, indexes every release in D1,
-      and targets exactly the boards that should receive it.
-    </p>
+<main id="main">
+  <section class="hero">
+    <div class="hero-copy">
+      <p class="eyebrow reveal" style="--d:0"><span class="pulse-dot" aria-hidden="true"></span>Open source · built for embedded fleets</p>
+      <h1 class="reveal" style="--d:1">
+        Firmware updates,
+        <span class="grad">without the<br>guesswork.</span>
+      </h1>
+      <p class="lede reveal" style="--d:2">
+        Updatini is the publishing console for signed RAUC bundles. Drop a release, chunk it
+        into R2, index it in D1, and aim it at one board or the whole fleet.
+      </p>
+      <div class="hero-actions reveal" style="--d:3">
+        <a class="btn btn-primary" href="/console/">
+          Open the console
+          <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/pycine/updatini" target="_blank" rel="noopener noreferrer">
+          <svg class="ic" aria-hidden="true"><use href="#i-github"/></svg>
+          View on GitHub
+        </a>
+      </div>
+      <div class="hero-metrics reveal" style="--d:4" role="list">
+        <div role="listitem"><strong>10 MiB</strong><span>chunk size</span></div>
+        <div role="listitem"><strong>256-bit</strong><span>admin token</span></div>
+        <div role="listitem"><strong>0</strong><span>servers to patch</span></div>
+      </div>
+    </div>
 
-    <div class="stats reveal" style="--d:3" role="group" aria-label="Release statistics">
-      <div class="stat">
-        <span class="stat-k">Releases</span>
-        <span class="stat-v"><span id="statReleases">—</span></span>
-        <span class="stat-n">indexed in D1</span>
-      </div>
-      <div class="stat">
-        <span class="stat-k">Total payload</span>
-        <span class="stat-v"><span id="statSize">—</span><small id="sizeUnit" hidden>MB</small></span>
-        <span class="stat-n">stored in R2</span>
-      </div>
-      <div class="stat">
-        <span class="stat-k">Boards targeted</span>
-        <span class="stat-v"><span id="statBoards">—</span></span>
-        <span class="stat-n">unique board IDs</span>
-      </div>
-      <div class="stat">
-        <span class="stat-k">Latest version</span>
-        <span class="stat-v stat-v-text"><span id="statLatest" class="is-empty">—</span></span>
-        <span class="stat-n">newest release</span>
+    <div class="hero-visual reveal" style="--d:2" aria-hidden="true">
+      <span class="visual-glow"></span>
+      <div class="board-float">
+        <div class="board-tilt" id="boardTilt">
+          <span class="board-glow" aria-hidden="true"></span>
+          <svg class="board" viewBox="0 0 560 560" role="img" aria-label="Stylised embedded Linux board illustration with a central OTA agent, copper traces, A/B update slots, and animated signal pulses">
+                        <defs>
+                          <linearGradient id="ub-bg" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#0e171e"/>
+                            <stop offset=".55" stop-color="#0a1015"/>
+                            <stop offset="1" stop-color="#070b0f"/>
+                          </linearGradient>
+                          <linearGradient id="ub-chip" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0" stop-color="#17262e"/>
+                            <stop offset="1" stop-color="#0c151a"/>
+                          </linearGradient>
+                          <radialGradient id="ub-halo" cx="50%" cy="50%" r="50%">
+                            <stop offset="0" stop-color="#45e0a0" stop-opacity=".2"/>
+                            <stop offset=".65" stop-color="#45e0a0" stop-opacity=".05"/>
+                            <stop offset="1" stop-color="#45e0a0" stop-opacity="0"/>
+                          </radialGradient>
+                          <pattern id="ub-grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                            <path d="M40 0H0V40" fill="none" stroke="#16242c" stroke-width="1"/>
+                          </pattern>
+                          <clipPath id="ub-clip"><rect x="16" y="16" width="528" height="528" rx="32"/></clipPath>
+                        </defs>
+
+                        <circle cx="280" cy="280" r="260" fill="url(#ub-halo)"/>
+                        <g>
+                          <rect x="16" y="16" width="528" height="528" rx="32" fill="url(#ub-bg)" stroke="#1e2f39"/>
+                          <g clip-path="url(#ub-clip)">
+                            <rect x="16" y="16" width="528" height="528" fill="url(#ub-grid)" opacity=".7"/>
+                            <circle cx="280" cy="280" r="190" fill="none" stroke="#1a2d35" stroke-dasharray="2 8"/>
+                          </g>
+
+                          <!-- mounting holes -->
+                          <g fill="#070b0e" stroke="#263a44">
+                            <circle cx="52" cy="52" r="7"/><circle cx="508" cy="52" r="7"/>
+                            <circle cx="52" cy="508" r="7"/><circle cx="508" cy="508" r="7"/>
+                          </g>
+                          <g fill="none" stroke="#3a545e">
+                            <circle cx="52" cy="52" r="2.5"/><circle cx="508" cy="52" r="2.5"/>
+                            <circle cx="52" cy="508" r="2.5"/><circle cx="508" cy="508" r="2.5"/>
+                          </g>
+
+                          <!-- copper traces -->
+                          <g fill="none" stroke="#2a4650" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M164 220H118V150H64"/>
+                            <path d="M164 260H96"/>
+                            <path d="M164 300H120V366H64"/>
+                            <path d="M396 220H442V156H500"/>
+                            <path d="M396 260H470"/>
+                            <path d="M396 300H446V364H500"/>
+                            <path d="M220 164V118H164V64"/>
+                            <path d="M280 164V104"/>
+                            <path d="M340 164V118H392V72"/>
+                            <path d="M220 396V442H164V500"/>
+                            <path d="M280 396V462"/>
+                            <path d="M340 396V440H392V492"/>
+                          </g>
+                          <g fill="#1d333c" stroke="#31505b">
+                            <rect x="58" y="145" width="12" height="10" rx="2"/>
+                            <rect x="90" y="255" width="12" height="10" rx="2"/>
+                            <rect x="58" y="361" width="12" height="10" rx="2"/>
+                            <rect x="494" y="151" width="12" height="10" rx="2"/>
+                            <rect x="464" y="255" width="12" height="10" rx="2"/>
+                            <rect x="494" y="359" width="12" height="10" rx="2"/>
+                            <rect x="158" y="59" width="12" height="10" rx="2"/>
+                            <rect y="99" x="274" width="12" height="10" rx="2"/>
+                            <rect x="386" y="67" width="12" height="10" rx="2"/>
+                            <rect x="158" y="495" width="12" height="10" rx="2"/>
+                            <rect x="274" y="457" width="12" height="10" rx="2"/>
+                            <rect x="386" y="487" width="12" height="10" rx="2"/>
+                          </g>
+
+                          <!-- highlighted signal traces -->
+                          <g fill="none" stroke="#45e0a0" stroke-opacity=".55" stroke-width="1.5">
+                            <path class="sig" d="M396 240H460V320H510"/>
+                            <path class="sig" d="M164 240H104V196H64" style="animation-delay:-2s"/>
+                          </g>
+
+                          <!-- chip pins -->
+                          <g fill="#223a44" stroke="#355661">
+                            <g>
+                              <rect x="162" y="202" width="18" height="7" rx="2"/><rect x="162" y="222" width="18" height="7" rx="2"/>
+                              <rect x="162" y="242" width="18" height="7" rx="2"/><rect x="162" y="262" width="18" height="7" rx="2"/>
+                              <rect x="162" y="282" width="18" height="7" rx="2"/><rect x="162" y="302" width="18" height="7" rx="2"/>
+                              <rect x="162" y="322" width="18" height="7" rx="2"/><rect x="162" y="342" width="18" height="7" rx="2"/>
+                            </g>
+                            <g>
+                              <rect x="380" y="202" width="18" height="7" rx="2"/><rect x="380" y="222" width="18" height="7" rx="2"/>
+                              <rect x="380" y="242" width="18" height="7" rx="2"/><rect x="380" y="262" width="18" height="7" rx="2"/>
+                              <rect x="380" y="282" width="18" height="7" rx="2"/><rect x="380" y="302" width="18" height="7" rx="2"/>
+                              <rect x="380" y="322" width="18" height="7" rx="2"/><rect x="380" y="342" width="18" height="7" rx="2"/>
+                            </g>
+                            <g>
+                              <rect x="202" y="162" width="7" height="18" rx="2"/><rect x="222" y="162" width="7" height="18" rx="2"/>
+                              <rect x="242" y="162" width="7" height="18" rx="2"/><rect x="262" y="162" width="7" height="18" rx="2"/>
+                              <rect x="282" y="162" width="7" height="18" rx="2"/><rect x="302" y="162" width="7" height="18" rx="2"/>
+                              <rect x="322" y="162" width="7" height="18" rx="2"/><rect x="342" y="162" width="7" height="18" rx="2"/>
+                            </g>
+                            <g>
+                              <rect x="202" y="380" width="7" height="18" rx="2"/><rect x="222" y="380" width="7" height="18" rx="2"/>
+                              <rect x="242" y="380" width="7" height="18" rx="2"/><rect x="262" y="380" width="7" height="18" rx="2"/>
+                              <rect x="282" y="380" width="7" height="18" rx="2"/><rect x="302" y="380" width="7" height="18" rx="2"/>
+                              <rect x="322" y="380" width="7" height="18" rx="2"/><rect x="342" y="380" width="7" height="18" rx="2"/>
+                            </g>
+                          </g>
+
+                          <!-- chip body -->
+                          <rect x="180" y="180" width="200" height="200" rx="18" fill="url(#ub-chip)" stroke="#3c6b66" stroke-opacity=".8"/>
+                          <rect x="194" y="194" width="172" height="172" rx="11" fill="none" stroke="#243f47"/>
+                          <text x="208" y="222" font-family="monospace" font-size="10" font-weight="500" letter-spacing="1.4" fill="#6d8c96">SOM-64</text>
+                          <circle class="led" cx="356" cy="212" r="3" fill="#45e0a0"/>
+                          <circle cx="356" cy="212" r="7" fill="none" stroke="#45e0a0" stroke-opacity=".3"/>
+                          <text x="280" y="278" text-anchor="middle" font-family="monospace" font-size="26" font-weight="500" letter-spacing="1" fill="#e8f1f6">UPDATINI</text>
+                          <text x="280" y="300" text-anchor="middle" font-family="monospace" font-size="11" font-weight="500" letter-spacing="2" fill="#8ba7b0">OTA AGENT · LINUX</text>
+                          <path d="M232 318H328" stroke="#264049"/>
+                          <text x="280" y="336" text-anchor="middle" font-family="monospace" font-size="10" font-weight="500" letter-spacing="1.4" fill="#7d9aa4">TLS · RAUC · A/B</text>
+
+                          <!-- crystal + caps -->
+                          <g stroke="#2a4650" fill="#0d171c">
+                            <rect x="94" y="432" width="34" height="20" rx="4"/>
+                          </g>
+                          <text x="94" y="468" font-family="monospace" font-size="9" font-weight="500" letter-spacing="1" fill="#718f99">XTAL</text>
+
+                          <!-- rootfs A/B slots -->
+                          <g>
+                            <rect x="398" y="420" width="70" height="24" rx="5" fill="#0d171c" stroke="#2a4650"/>
+                            <text x="410" y="436" font-family="monospace" font-size="10" font-weight="500" fill="#7d9aa4">A</text>
+                            <circle cx="454" cy="432" r="2.5" fill="#2a4650"/>
+                            <rect x="398" y="452" width="70" height="24" rx="5" fill="#0d171c" stroke="#45e0a0" stroke-opacity=".45"/>
+                            <text x="410" y="468" font-family="monospace" font-size="10" font-weight="500" fill="#45e0a0">B</text>
+                            <circle class="led" cx="454" cy="464" r="2.5" fill="#45e0a0"/>
+                            <text x="398" y="492" font-family="monospace" font-size="9" font-weight="500" letter-spacing="1" fill="#718f99">ROOTFS A/B</text>
+                          </g>
+
+                          <!-- antenna meander -->
+                          <path d="M452 96h26v14h-16v14h26v14h-16v14h26" fill="none" stroke="#38bdf8" stroke-opacity=".65" stroke-width="1.6"/>
+
+                          <!-- labels -->
+                          <g font-family="monospace" font-size="10" font-weight="500" letter-spacing="1.2" fill="#7d9aa4">
+                            <text x="38" y="140">TLS</text>
+                            <text x="470" y="146">RAUC</text>
+                            <text x="476" y="354">A/B</text>
+                            <text x="38" y="352">BOOT</text>
+                            <text x="150" y="50">5V</text>
+                            <text x="390" y="60">OTA</text>
+                            <text x="146" y="518">GND</text>
+                            <text x="396" y="510">HTTPS</text>
+                          </g>
+
+                          <!-- animated pulses -->
+                          <circle class="pulse-dot" r="3" fill="#45e0a0">
+                            <animateMotion dur="5s" repeatCount="indefinite" path="M396 240H460V320H510"/>
+                          </circle>
+                          <circle class="pulse-dot" r="2.5" fill="#45e0a0" opacity=".8">
+                            <animateMotion dur="6.5s" begin="-2s" repeatCount="indefinite" path="M164 240H104V196H64"/>
+                          </circle>
+                          <circle class="pulse-dot" r="2.5" fill="#38bdf8" opacity=".8">
+                            <animateMotion dur="7s" begin="-4s" repeatCount="indefinite" path="M280 396V462"/>
+                          </circle>
+
+                          <!-- board corners -->
+                          <g fill="none" stroke="#45e0a0" stroke-opacity=".35">
+                            <path d="M24 60V24h36M536 24h-36M24 500v36h36M536 536h-36"/>
+                          </g>
+                          <text x="44" y="536" font-family="monospace" font-size="9" font-weight="500" letter-spacing="1.5" fill="#66838d">UPDATINI · OTA</text>
+                          <text x="516" y="44" text-anchor="end" font-family="monospace" font-size="9" font-weight="500" letter-spacing="1.5" fill="#66838d">REV 01</text>
+                        </g>
+                      </svg>
+
+          <div class="ota-card" role="img" aria-label="Illustrative OTA update log: release 1.5.0 found for board zaater-07, signature verified, RAUC installed to slot B, rollback armed">
+            <div class="ota-head">
+              <span class="ota-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span>agent@updatini:~</span>
+              <span class="ota-tty">RAUC</span>
+            </div>
+            <pre class="ota-log"><span style="--i:0"><b>$</b> updatini agent --poll</span><span style="--i:1"><em>[ ok ]</em> release 1.5.0 · zaater-07</span><span style="--i:2"><em>[ ok ]</em> sha256 · signature verified</span><span style="--i:3"><em>[ ok ]</em> rauc · slot B written</span><span style="--i:4"><em>[ ok ]</em> rollback armed</span><span class="ota-cursor" style="--i:5"><b>$</b> <i class="caret"></i></span></pre>
+          </div>
+
+          <span class="hchip hchip-a"><span class="hchip-dot"></span>R2 · multipart</span>
+          <span class="hchip hchip-b"><span class="hchip-dot cyan"></span>D1 · indexed</span>
+          <span class="hchip hchip-c"><svg class="ic"><use href="#i-board"/></svg>board · zaater-07</span>
+        </div>
       </div>
     </div>
   </section>
 
-  <div class="workspace">
-    <section class="card card-publish reveal" id="new-release" aria-labelledby="newTitle">
-      <div class="card-head">
-        <div>
-          <h2 id="newTitle">New release</h2>
-          <p class="card-sub">Drop a bundle, name it, aim it.</p>
-        </div>
-        <span class="pill pill-mono" aria-hidden="true">.raucb</span>
-      </div>
-
-      <input id="file" class="sr-only" type="file" accept=".raucb" tabindex="-1" aria-hidden="true">
-
-      <div class="drop-shell">
-        <div class="drop" id="drop" role="button" tabindex="0" aria-label="Choose a RAUC bundle file" aria-describedby="dropSub">
-          <svg class="drop-edge" aria-hidden="true" preserveAspectRatio="none">
-            <rect x="0" y="0" width="100%" height="100%" rx="15" vector-effect="non-scaling-stroke"/>
-          </svg>
-          <span class="drop-scan" aria-hidden="true"></span>
-          <div class="drop-stage">
-            <div class="drop-empty">
-              <span class="drop-ic"><svg class="ic" aria-hidden="true"><use href="#i-upload"/></svg></span>
-              <p class="drop-title">Drop your <span class="mono">.raucb</span> bundle</p>
-              <p class="drop-sub" id="dropSub">or <span class="drop-link">browse files</span> · streamed in 10&nbsp;MB chunks</p>
-            </div>
-            <div class="file-card">
-              <span class="file-ic"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg></span>
-              <span class="file-meta">
-                <span class="file-name" id="fileName">—</span>
-                <span class="file-size" id="fileSize">—</span>
-              </span>
-            </div>
-          </div>
-        </div>
-        <button type="button" class="icon-btn file-x" id="removeFile" aria-label="Remove selected file">
-          <svg class="ic" aria-hidden="true"><use href="#i-x"/></svg>
-        </button>
-      </div>
-
-      <div class="form-grid">
-        <div class="field">
-          <label class="label" for="ver">Version <span class="auto-tag" id="autoTag" hidden>from filename</span></label>
-          <input class="input mono" id="ver" type="text" placeholder="1.2.0" maxlength="64" spellcheck="false" autocomplete="off" aria-describedby="verErr">
-          <p class="f-err" id="verErr" role="alert" hidden></p>
-        </div>
-        <div class="field">
-          <label class="label" for="comp">Compatible string</label>
-          <input class="input mono" id="comp" type="text" value="raspberrypi3-64" maxlength="128" spellcheck="false" autocomplete="off" aria-describedby="compErr">
-          <p class="f-err" id="compErr" role="alert" hidden></p>
-        </div>
-      </div>
-
-      <div class="field target-field" role="group" aria-labelledby="sendToLabel">
-        <span class="label" id="sendToLabel">Send to</span>
-        <div class="seg" id="seg">
-          <span class="seg-ind" aria-hidden="true"></span>
-          <label class="seg-opt">
-            <input type="radio" name="target" value="all" checked>
-            <span class="seg-inner"><svg class="ic" aria-hidden="true"><use href="#i-layer"/></svg>Whole fleet</span>
-          </label>
-          <label class="seg-opt">
-            <input type="radio" name="target" value="one">
-            <span class="seg-inner"><svg class="ic" aria-hidden="true"><use href="#i-board"/></svg>Single board</span>
-          </label>
-        </div>
-        <div class="board-reveal" id="boardReveal" aria-hidden="true">
-          <div class="board-inner">
-            <div class="field">
-              <label class="label" for="board">Board ID <span class="label-hint">ex: zaater-01</span></label>
-              <input class="input mono" id="board" type="text" placeholder="zaater-01" maxlength="64" spellcheck="false" autocomplete="off" aria-describedby="boardErr">
-              <p class="f-err" id="boardErr" role="alert" hidden></p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button class="btn btn-primary" id="go" type="button">
-          <span class="btn-ic" aria-hidden="true"><svg class="ic"><use href="#i-bolt"/></svg></span>
-          <span class="btn-text" id="goText">Publish update</span>
-          <span class="spinner" aria-hidden="true"></span>
-          <svg class="ic btn-arrow" aria-hidden="true"><use href="#i-arrow"/></svg>
-        </button>
-        <button class="btn btn-ghost" id="reset" type="button">Clear</button>
-      </div>
-      <p class="form-note"><span class="note-shortcut"><kbd>Ctrl</kbd><span>+</span><kbd>↵</kbd> to publish ·</span> multipart upload, 10&nbsp;MB chunks</p>
-
-      <div class="progress" id="progress" hidden>
-        <div class="progress-top">
-          <span class="stage" id="stagePill" aria-live="polite">Preparing upload</span>
-          <span class="pct" id="pct">0%</span>
-        </div>
-        <div class="track" id="track" role="progressbar" aria-label="Upload progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span class="fill" id="fill"></span></div>
-        <div class="progress-foot">
-          <span id="progressDetail">Opening a multipart session…</span>
-          <span id="progressEta"></span>
-        </div>
-      </div>
-    </section>
-
-    <aside class="card card-manifest reveal" aria-labelledby="manifestTitle">
-      <div class="card-head">
-        <div>
-          <h2 id="manifestTitle">Release manifest</h2>
-          <p class="card-sub">A live preview of what gets indexed.</p>
-        </div>
-        <span class="pill">preview</span>
-      </div>
-
-      <dl class="mlist">
-        <div class="mrow"><dt>Bundle</dt><dd class="mono is-empty" data-mf="bundle">—</dd></div>
-        <div class="mrow"><dt>Version</dt><dd class="mono is-empty" data-mf="version">—</dd></div>
-        <div class="mrow"><dt>Compatible</dt><dd class="mono" data-mf="compatible">raspberrypi3-64</dd></div>
-        <div class="mrow"><dt>Target</dt><dd class="mf-target" data-mf="target" data-tone="all">whole fleet</dd></div>
-        <div class="mrow"><dt>Size</dt><dd class="mono is-empty" data-mf="size">—</dd></div>
-      </dl>
-
-      <div class="pipe-block">
-        <div class="pipe-head">
-          <span class="label">Pipeline</span>
-          <span class="pipe-status" id="pipeStatus">idle</span>
-        </div>
-        <div class="pipe" id="pipe" data-state="idle">
-          <span class="pipe-rail" aria-hidden="true"><i id="pipeFill"></i></span>
-          <ol class="pipe-steps">
-            <li class="step" data-step="0">
-              <span class="node"><span class="n">1</span><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span>
-              <span class="step-main"><span class="step-title">Upload</span><span class="step-desc">Multipart session in R2</span></span>
-              <span class="step-state">queued</span>
-            </li>
-            <li class="step" data-step="1">
-              <span class="node"><span class="n">2</span><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span>
-              <span class="step-main"><span class="step-title">Chunk</span><span class="step-desc">10 MB parts, retried ×3</span></span>
-              <span class="step-state">queued</span>
-            </li>
-            <li class="step" data-step="2">
-              <span class="node"><span class="n">3</span><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span>
-              <span class="step-main"><span class="step-title">Commit</span><span class="step-desc">Seal the multipart object</span></span>
-              <span class="step-state">queued</span>
-            </li>
-            <li class="step" data-step="3">
-              <span class="node"><span class="n">4</span><svg class="ic" aria-hidden="true"><use href="#i-check"/></svg></span>
-              <span class="step-main"><span class="step-title">Index</span><span class="step-desc">Insert row into D1</span></span>
-              <span class="step-state">queued</span>
-            </li>
-          </ol>
-        </div>
-      </div>
-      <p class="manifest-foot"><svg class="ic" aria-hidden="true"><use href="#i-shield"/></svg>Bearer auth · chunked to R2 · indexed in D1</p>
-    </aside>
+  <div class="tech-strip reveal" aria-label="Built with">
+    <span>RAUC bundles</span><i></i>
+    <span>Cloudflare Workers</span><i></i>
+    <span>R2 multipart</span><i></i>
+    <span>D1 index</span><i></i>
+    <span>MIT licensed</span>
   </div>
 
-  <section class="card history reveal" id="history" aria-labelledby="historyTitle">
-    <div class="card-head history-head">
+  <section class="section" id="features">
+    <div class="section-head reveal">
       <div>
-        <h2 id="historyTitle">Release history <span class="count" id="count">—</span></h2>
-        <p class="card-sub">Every bundle the update API can serve, newest first.</p>
+        <p class="eyebrow">Capabilities</p>
+        <h2>Built for the way<br>firmware actually ships.</h2>
       </div>
-      <div class="toolbar">
-        <div class="search">
-          <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
-          <input id="q" type="search" placeholder="Filter releases" aria-label="Filter releases" autocomplete="off" spellcheck="false">
-          <kbd aria-hidden="true">/</kbd>
+      <p class="section-note">A release console,<br>not a file dump.</p>
+    </div>
+
+    <div class="bento">
+      <article class="bento-card card-upload reveal">
+        <div class="bento-icon"><svg class="ic"><use href="#i-upload"/></svg></div>
+        <h3>Chunked by default</h3>
+        <p>Bundles stream in 10 MiB parts with up to three retries, live throughput and an ETA. Large firmware never blocks the tab.</p>
+        <div class="chunkviz" aria-hidden="true">
+          <div class="chunk-track">
+            <i class="fill"></i><i class="fill"></i><i class="fill"></i><i class="active"></i><i></i>
+          </div>
+          <div class="chunk-meta"><span>10 MiB parts</span><span>retry ×3</span><span>multipart</span></div>
         </div>
-        <button class="icon-btn refresh" id="refresh" type="button" title="Refresh releases" aria-label="Refresh releases">
-          <svg class="ic" aria-hidden="true"><use href="#i-refresh"/></svg>
-        </button>
-      </div>
-    </div>
+      </article>
 
-    <div class="table-wrap" id="tableWrap" hidden>
-      <table>
-        <caption class="sr-only">Published update bundles</caption>
-        <thead>
-          <tr>
-            <th scope="col">Version</th>
-            <th scope="col">Compatible</th>
-            <th scope="col">Target</th>
-            <th scope="col" class="num">Size</th>
-            <th scope="col">Published</th>
-            <th scope="col"><span class="sr-only">Actions</span></th>
-          </tr>
-        </thead>
-        <tbody id="rows"></tbody>
-      </table>
-    </div>
+      <article class="bento-card card-target reveal" style="--d:1">
+        <div class="bento-icon"><svg class="ic"><use href="#i-layers"/></svg></div>
+        <h3>Target with intent</h3>
+        <p>Send a release to the whole fleet or to one board ID. The target travels with the release.</p>
+        <div class="targetviz" aria-hidden="true">
+          <span class="target-ring"></span>
+          <span class="tchip all"><i></i>whole fleet</span>
+          <span class="tchip board"><i></i>board · zaater-07</span>
+        </div>
+      </article>
 
-    <div class="state" id="histState">
-      <div class="state-art" id="stateArt" aria-hidden="true">
-        <svg class="ic" viewBox="0 0 24 24"><use href="#i-lock"/></svg>
-      </div>
-      <h3 id="stateTitle">Connect to load releases</h3>
-      <p id="stateText">Paste your admin token in the header to list published bundles and start shipping updates.</p>
-      <button class="btn btn-ghost" id="stateBtn" type="button" data-action="token">Use admin token</button>
+      <article class="bento-card card-index reveal">
+        <div class="bento-icon"><svg class="ic"><use href="#i-database"/></svg></div>
+        <h3>Every release indexed</h3>
+        <p>Version, compatible string, target, size and timestamp — searchable and one click from the key.</p>
+        <div class="indexviz" aria-hidden="true">
+          <div class="indexrow"><span class="iv">1.5.0</span><span class="tag">latest</span><span class="it">just now</span></div>
+          <div class="indexrow"><span class="iv">1.4.2</span><span class="it">12m ago</span></div>
+          <div class="indexrow"><span class="iv">1.4.1</span><span class="it">1d ago</span></div>
+        </div>
+      </article>
+
+      <article class="bento-card card-private reveal" style="--d:1">
+        <div class="bento-icon"><svg class="ic"><use href="#i-lock"/></svg></div>
+        <h3>Private by default</h3>
+        <p>Bundles land in a private R2 bucket. There is no public download URL, and the API wants a token.</p>
+        <div class="shieldviz" aria-hidden="true">
+          <span class="ring"></span><span class="ring r2"></span>
+          <svg class="ic"><use href="#i-shield"/></svg>
+        </div>
+      </article>
+
+      <article class="bento-card card-edge reveal" style="--d:2">
+        <div class="bento-icon"><svg class="ic"><use href="#i-bolt"/></svg></div>
+        <h3>Edge-native</h3>
+        <p>Workers serve the console and API. R2 holds the bytes, D1 holds the index. No server to patch.</p>
+        <div class="edgeviz" aria-hidden="true">
+          <span class="node worker">Worker</span>
+          <span class="edge-line"></span>
+          <span class="node r2">R2</span>
+          <span class="node d1">D1</span>
+        </div>
+      </article>
+
+      <article class="bento-card card-open reveal">
+        <div class="open-copy">
+          <div class="bento-icon"><svg class="ic"><use href="#i-code"/></svg></div>
+          <h3>Open source, end to end.</h3>
+          <p>MIT licensed, no build step, no framework in the browser. Fork it, self-host it, change it.</p>
+          <div class="open-actions">
+            <a class="text-link" href="https://github.com/pycine/updatini" target="_blank" rel="noopener noreferrer">
+              Star on GitHub <svg class="ic"><use href="#i-external"/></svg>
+            </a>
+            <span class="mono-chip">npm run deploy</span>
+          </div>
+        </div>
+        <div class="codecard" aria-hidden="true">
+          <div class="codebar"><span></span><span></span><span></span></div>
+          <pre><code><span class="c-dim">$</span> git clone https://github.com/pycine/updatini
+<span class="c-dim">$</span> npm install
+<span class="c-dim">$</span> npm run token
+<span class="c-dim">$</span> npm run deploy
+<span class="c-accent">✓ deployed to the edge</span></code></pre>
+        </div>
+      </article>
     </div>
   </section>
 
-  <footer class="foot">
-    <span>Updatini · over-the-air updates for embedded fleets</span>
-    <span class="foot-right"><span class="foot-dot" aria-hidden="true"></span>R2 multipart · D1 index · Workers</span>
-  </footer>
+  <section class="section how" id="how">
+    <div class="section-head reveal">
+      <div>
+        <p class="eyebrow">Workflow</p>
+        <h2>From build artifact<br>to indexed release.</h2>
+      </div>
+      <p class="section-note">Three steps.<br>No upload rituals.</p>
+    </div>
+
+    <div class="steps reveal">
+      <div class="steps-line" aria-hidden="true"><i></i></div>
+
+      <article class="step">
+        <span class="step-num">01</span>
+        <span class="step-icon"><svg class="ic"><use href="#i-package"/></svg></span>
+        <h3>Build a signed bundle</h3>
+        <p>Produce a <code>.raucb</code> in your Yocto / RAUC pipeline. Updatini stores the signed artifact; it never needs your signing keys.</p>
+        <span class="step-tag">RAUC</span>
+      </article>
+
+      <article class="step" style="--d:1">
+        <span class="step-num">02</span>
+        <span class="step-icon"><svg class="ic"><use href="#i-upload"/></svg></span>
+        <h3>Drop, name, aim</h3>
+        <p>Upload it from the console, set the version and compatible string, then choose the whole fleet or a single board.</p>
+        <span class="step-tag">console</span>
+      </article>
+
+      <article class="step" style="--d:2">
+        <span class="step-num">03</span>
+        <span class="step-icon"><svg class="ic"><use href="#i-database"/></svg></span>
+        <h3>Indexed for the fleet</h3>
+        <p>The Worker seals the multipart object and writes the release to D1, ready for your device update endpoint to serve.</p>
+        <span class="step-tag">R2 → D1</span>
+      </article>
+    </div>
+
+    <p class="how-note reveal">
+      Device-side update checks and bundle downloads are intentionally out of scope.
+      Bring your own endpoint — the release index is already there.
+    </p>
+  </section>
+
+  <section class="section" id="security">
+    <div class="security-panel reveal">
+      <div class="security-copy">
+        <p class="eyebrow">Security</p>
+        <h2>A small surface<br>area, on purpose.</h2>
+        <p>Every <code>/api</code> route is guarded by a bearer token. Bundles stay in a private bucket, and the token can be rotated with one command.</p>
+        <a class="text-link" href="https://github.com/pycine/updatini/blob/main/SECURITY.md" target="_blank" rel="noopener noreferrer">
+          Read the security policy <svg class="ic"><use href="#i-external"/></svg>
+        </a>
+      </div>
+
+      <ul class="security-list">
+        <li>
+          <span class="sec-ic"><svg class="ic"><use href="#i-lock"/></svg></span>
+          <strong>Bearer-token API</strong>
+          <p>One 256-bit admin secret, checked on every API call.</p>
+        </li>
+        <li>
+          <span class="sec-ic"><svg class="ic"><use href="#i-shield"/></svg></span>
+          <strong>Private R2</strong>
+          <p>No public bundle URL; object keys stay server-side.</p>
+        </li>
+        <li>
+          <span class="sec-ic"><svg class="ic"><use href="#i-cloud"/></svg></span>
+          <strong>HTTPS by default</strong>
+          <p>Cloudflare's edge handles transport. No certificates to manage.</p>
+        </li>
+        <li>
+          <span class="sec-ic"><svg class="ic"><use href="#i-refresh"/></svg></span>
+          <strong>Rotate in one command</strong>
+          <p><code>npm run token</code> overwrites the secret and revokes the old token.</p>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="cta-wrap">
+    <div class="cta reveal">
+      <span class="cta-grid" aria-hidden="true"></span>
+      <p class="eyebrow">Ready when you are</p>
+      <h2>Your next release is<br>one drop away.</h2>
+      <p class="cta-lede">Publish a signed bundle in under a minute. Open source, self-hostable, and built to stay out of your way.</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href="/console/">
+          Open the console
+          <svg class="ic" aria-hidden="true"><use href="#i-arrow"/></svg>
+        </a>
+        <a class="btn btn-ghost" href="https://github.com/pycine/updatini#readme" target="_blank" rel="noopener noreferrer">
+          <svg class="ic" aria-hidden="true"><use href="#i-github"/></svg>
+          Read the docs
+        </a>
+      </div>
+      <p class="cta-note">You'll need the admin token created with <code>npm run token</code>.</p>
+    </div>
+  </section>
 </main>
 
-<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+<footer class="foot">
+  <div class="foot-top">
+    <a class="brand brand-foot" href="/" aria-label="Updatini home">
+      <span class="mark small" aria-hidden="true">
+        <svg viewBox="0 0 38 38" width="30" height="30">
+          <defs>
+            <linearGradient id="landingMarkFoot" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="#7cf5c6"/><stop offset="1" stop-color="#38bdf8"/>
+            </linearGradient>
+          </defs>
+          <rect x="1" y="1" width="36" height="36" rx="11" fill="#071017" stroke="url(#landingMarkFoot)" stroke-opacity=".5"/>
+          <path d="M19 26.5V12" stroke="url(#landingMarkFoot)" stroke-width="2.3" stroke-linecap="round"/>
+          <path d="m13 18 6-6 6 6" fill="none" stroke="url(#landingMarkFoot)" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <span class="brand-copy"><span class="brand-name">Updatini</span><span class="brand-sub">OTA control plane</span></span>
+    </a>
+    <nav class="foot-links" aria-label="Footer">
+      <a href="/console/">Console</a>
+      <a href="#features">Features</a>
+      <a href="https://github.com/pycine/updatini" target="_blank" rel="noopener noreferrer">GitHub</a>
+      <a href="https://github.com/pycine/updatini/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
+    </nav>
+  </div>
+  <div class="foot-bottom">
+    <p>© <span data-year>2026</span> Muhammad Yacin. Built with Cloudflare Workers, R2 and D1.</p>
+    <p class="mono">rauc · r2 · d1 · workers</p>
+  </div>
+</footer>
 
-<noscript><div class="noscript">Updatini needs JavaScript enabled to upload bundles and load releases.</div></noscript>
-<script src="app.js" defer></script>
+<noscript><p class="noscript">Updatini is an interactive console and needs JavaScript enabled. The documentation lives on <a href="https://github.com/pycine/updatini">GitHub</a>.</p></noscript>
+<script src="theme.js" defer></script>
+<script src="landing.js" defer></script>
 </body>
 </html>

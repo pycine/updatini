@@ -27,9 +27,11 @@ If the upload flow does not work locally, check that the local D1 table exists a
 
 | Path | Purpose |
 | --- | --- |
-| `public/index.html` | Semantic page structure and SVG icon sprite |
-| `public/styles.css` | Design tokens, layout, responsive rules, animations |
-| `public/app.js` | API client, upload state machine, history/search, auth, toasts |
+| `public/index.html` | Landing page |
+| `public/landing.css`, `public/landing.js` | Landing layout, motion, reveals, hero parallax |
+| `public/console/index.html` | Console page structure and SVG icon sprite |
+| `public/styles.css` | Console design tokens, layout, responsive rules, animations |
+| `public/app.js` | Console API client, upload state machine, history/search, auth, toasts |
 | `src/worker.js` | Worker API: multipart upload and release listing |
 | `schema.sql` | D1 schema |
 | `scripts/` | Bash helpers for token generation and deployment |
@@ -61,7 +63,7 @@ If you changed the upload flow, verify it end-to-end against a local or test Wor
 5. Check that the new releases appear in the history and that search filters them.
 6. Test the failure path (for example, stop the Worker mid-upload) and confirm the error state is readable.
 
-If you changed the UI, include a before/after screenshot in the pull request and check desktop plus a narrow viewport (around 390 px wide).
+If you changed the UI, include a before/after screenshot in the pull request and check desktop plus a narrow viewport (around 390 px wide). Check both `/` (landing) and `/console/` (console).
 
 ## Pull requests
 

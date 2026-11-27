@@ -34,7 +34,7 @@
     "token:local": "bash scripts/generate-admin-token.sh --local",
     "db:init": "wrangler d1 execute updatini --file=./schema.sql --remote",
     "db:init:local": "wrangler d1 execute updatini --file=./schema.sql --local",
-    "check": "node --check src/worker.js && node --check public/app.js"
+    "check": "node --check src/worker.js && node --check public/app.js && node --check public/landing.js && node --check public/theme.js"
   },
   "devDependencies": {
     "wrangler": "^4.168.0"

@@ -13,7 +13,7 @@ Publish signed RAUC bundles to Cloudflare R2, index every release in D1, and tar
 
 </div>
 
-![Updatini OTA console](preview/desktop.jpg)
+![Updatini landing page](preview/landing.jpg)
 
 > **Reference deployment:** [updatini.zaaterx.workers.dev](https://updatini.zaaterx.workers.dev) — protected by an admin token, so visitors only see the sign-in state.
 
@@ -28,10 +28,18 @@ The project runs entirely on Cloudflare's free-tier-friendly primitives:
 - **D1** — a small SQL index of releases (version, compatible string, target, size, timestamp)
 - **Vanilla HTML/CSS/JS** — no frontend build step, no framework, no dependencies shipped to the browser
 
-The UI is a dark "control plane" interface with a live upload pipeline, chunk progress, release history, search, and reduced-motion support.
+The UI is a responsive "control plane" interface with **light and dark themes** (system preference on first visit, then a persistent toggle), a live upload pipeline, chunk progress, release history, search, and reduced-motion support.
 
 <details>
 <summary><strong>More screenshots</strong></summary>
+
+### Light theme
+
+![Updatini landing page in light mode](preview/landing-light.jpg)
+
+### Console
+
+![Updatini OTA console](preview/desktop.jpg)
 
 ### Multipart upload in progress
 
@@ -50,6 +58,7 @@ The UI is a dark "control plane" interface with a live upload pipeline, chunk pr
 - **Release history** — newest first, with version, compatible string, target chip, size, relative timestamp, and the R2 object key.
 - **Search and copy** — filter by version, board, compatible string, or key; copy a bundle key with one click.
 - **Admin-token authentication** — a single bearer token guards every `/api/*` route.
+- **Light and dark themes** — follows the operating-system preference on first visit, then remembers your choice; the sun/moon toggle is available on both the landing page and the console.
 - **Responsive, accessible UI** — card layout on small screens, visible focus states, ARIA progress bar/live regions, and `prefers-reduced-motion` support.
 - **No build step** — edit `public/` and reload; Wrangler handles bundling the Worker.
 
@@ -82,10 +91,16 @@ Every release is stored as an R2 object at `bundles/<timestamp>-<filename>` and 
 
 ```text
 .
-├── public/                         # Static console (served by Workers Assets)
-│   ├── index.html
-│   ├── styles.css                  # Design tokens, layout, animations
-│   ├── app.js                      # Upload flow, history, auth, UI state
+├── public/                         # Static assets (served by Workers Assets)
+│   ├── index.html                  # Landing page
+│   ├── landing.css                 # Landing design + animations
+│   ├── landing.js                  # Reveals, nav chrome, hero parallax
+│   ├── theme.css                   # Shared toggle + theme crossfade
+│   ├── theme.js                    # Theme persistence + system preference
+│   ├── console/
+│   │   └── index.html              # OTA console
+│   ├── styles.css                  # Console design tokens, layout, animations
+│   ├── app.js                      # Console upload flow, history, auth, UI state
 │   └── favicon.svg
 ├── src/
 │   └── worker.js                   # API: upload/start → part → finish, list releases
@@ -161,7 +176,7 @@ The script generates 32 random bytes (64 hex characters), installs it as the `AD
 npm run deploy
 ```
 
-Wrangler uploads the Worker and the contents of `public/`, then prints the `*.workers.dev` URL. Open it, paste the token into **Admin token**, and click **Connect**.
+Wrangler uploads the Worker and the contents of `public/`, then prints the `*.workers.dev` URL. Open it, choose **Open console**, paste the token into **Admin token**, and click **Connect**.
 
 That is the whole setup. Later deployments are just `npm run deploy`.
 
@@ -222,7 +237,7 @@ npm run db:init:local   # creates the bundles table in local D1
 npm run dev             # http://localhost:8787
 ```
 
-Wrangler runs the Worker locally with local R2 and D1 emulation. Uploads work against the local `.wrangler/state` directory, so you can test the full publish flow without touching production data.
+Wrangler runs the Worker locally with local R2 and D1 emulation. The landing page is at `http://localhost:8787/` and the console at `http://localhost:8787/console/`. Uploads work against the local `.wrangler/state` directory, so you can test the full publish flow without touching production data.
 
 To use the real remote resources while developing:
 
